@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klassen-Wahrscheinlichkeits-Rechner</title>
+    <title>Klassen-Wahrscheinlichkeits-Plattform</title>
     <script>
         window.MathJax = {
             tex: {
@@ -32,6 +32,7 @@
             --success-bg: #f0fdf4;
             --success-border: #bbf7d0;
             --success-text: #16a34a;
+            --accent: #f59e0b;
         }
 
         body {
@@ -55,14 +56,36 @@
             max-width: 700px;
         }
 
-        .sub-title {
-            font-size: 14px;
-            color: var(--text-secondary);
-            text-align: left;
+        /* NAVIGATION TABS */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #e2e8f0;
+            padding: 6px;
+            border-radius: 12px;
             width: 100%;
             max-width: 650px;
-            margin-bottom: 24px;
-            padding-left: 5px;
+            box-sizing: border-box;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
 
         .container {
@@ -73,6 +96,14 @@
             width: 100%;
             max-width: 650px;
             box-sizing: border-box;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
         }
 
         .section {
@@ -151,7 +182,7 @@
             background-color: var(--primary-hover);
         }
 
-        #result-box {
+        .result-box {
             margin-top: 25px;
             padding: 20px;
             border-radius: 10px;
@@ -161,14 +192,14 @@
             display: none;
         }
 
-        #result-value {
+        .result-value {
             font-size: 24px;
             font-weight: 800;
             color: var(--primary);
             margin-top: 5px;
         }
 
-        #simulator-box {
+        .simulator-box {
             margin-top: 20px;
             padding: 20px;
             border-radius: 10px;
@@ -183,15 +214,6 @@
             font-size: 15px;
             color: var(--success-text);
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .sim-text {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
         }
 
         .sim-highlight {
@@ -228,165 +250,170 @@
 </head>
 <body>
 
-    <div class="main-title">Wahrscheinlichkeit für das zusammenkommen innerhalb der neuen Klassen</div>
-    <div class="sub-title">Fülle die Felder aus und drücke auf „berechnen“ um die wahrscheinlichkeit zu erhalten.</div>
+    <div class="main-title">Klassen- & Match-Plattform</div>
+    
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('rechner-page', this)">📊 Klassen-Rechner</button>
+        <button class="tab-btn" onclick="switchTab('match-page', this)">🔥 Matchpartner-Finder</button>
+    </div>
 
     <div class="container">
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">1. Deine Daten</div>
-            </div>
-            <div class="form-group">
-                <div class="input-row">
-                    <div style="flex: 1;">
-                        <label for="meinGeschlecht">Dein Geschlecht:</label>
-                        <select id="meinGeschlecht">
-                            <option value="M">Mann</option>
-                            <option value="F">Frau</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label for="meineKlasse">Deine aktuelle Klasse:</label>
-                        <select id="meineKlasse">
-                            <option value="10a">10a</option>
-                            <option value="10b">10b</option>
-                            <option value="10c">10c</option>
-                            <option value="10d">10d</option>
-                            <option value="10e">10e</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">2. Deine Cliquenwünsche</div>
-                <div class="optional-badge">Dieses Feld ist optional</div>
-            </div>
-            
-            <div class="form-group">
-                <label>Wunschperson 1:</label>
-                <div class="input-row">
-                    <select id="wunsch1_G">
-                        <option value="">Mann / Frau</option>
-                        <option value="M">Mann</option>
-                        <option value="F">Frau</option>
-                    </select>
-                    <select id="wunsch1_klasse">
-                        <option value="unbekannt">Klasse wählen</option>
-                        <option value="10a">10a</option>
-                        <option value="10b">10b</option>
-                        <option value="10c">10c</option>
-                        <option value="10d">10d</option>
-                        <option value="10e">10e</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Wunschperson 2:</label>
-                <div class="input-row">
-                    <select id="wunsch2_G">
-                        <option value="">Mann / Frau</option>
-                        <option value="M">Mann</option>
-                        <option value="F">Frau</option>
-                    </select>
-                    <select id="wunsch2_klasse">
-                        <option value="unbekannt">Klasse wählen</option>
-                        <option value="10a">10a</option>
-                        <option value="10b">10b</option>
-                        <option value="10c">10c</option>
-                        <option value="10d">10d</option>
-                        <option value="10e">10e</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">3. Gesuchte Person</div>
-            </div>
-            <div class="form-group">
-                <div class="input-row">
-                    <div style="flex: 1;">
-                        <label for="zielGeschlecht">Geschlecht:</label>
-                        <select id="zielGeschlecht">
-                            <option value="M">Mann</option>
-                            <option value="F">Frau</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label for="zielKlasse">Aktuelle Klasse:</label>
-                        <select id="zielKlasse">
-                            <option value="10a">10a</option>
-                            <option value="10b">10b</option>
-                            <option value="10c">10c</option>
-                            <option value="10d">10d</option>
-                            <option value="10e">10e</option>
-                        </select>
+        
+        <div id="rechner-page" class="page-content active">
+            <div class="section">
+                <div class="section-header"><div class="section-title">1. Deine Daten</div></div>
+                <div class="form-group">
+                    <div class="input-row">
+                        <div style="flex: 1;">
+                            <label for="meinGeschlecht">Dein Geschlecht:</label>
+                            <select id="meinGeschlecht">
+                                <option value="M">Mann</option>
+                                <option value="F">Frau</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="meineKlasse">Deine aktuelle Klasse:</label>
+                            <select id="meineKlasse">
+                                <option value="10a">10a</option>
+                                <option value="10b">10b</option>
+                                <option value="10c">10c</option>
+                                <option value="10d">10d</option>
+                                <option value="10e">10e</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">4. Cliquenwünsche der gesuchten Person</div>
-                <div class="optional-badge">Dieses Feld ist optional</div>
-            </div>
-            
-            <div class="form-group">
-                <label>Cliquen-Partner 1 der gesuchten Person:</label>
-                <div class="input-row">
-                    <select id="clique1_G">
-                        <option value="">Mann / Frau</option>
-                        <option value="M">Mann</option>
-                        <option value="F">Frau</option>
-                    </select>
-                    <select id="clique1_klasse">
-                        <option value="unbekannt">Klasse wählen</option>
-                        <option value="10a">10a</option>
-                        <option value="10b">10b</option>
-                        <option value="10c">10c</option>
-                        <option value="10d">10d</option>
-                        <option value="10e">10e</option>
-                    </select>
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">2. Deine Cliquenwünsche</div>
+                    <div class="optional-badge">Optional</div>
+                </div>
+                <div class="form-group">
+                    <label>Wunschperson 1:</label>
+                    <div class="input-row">
+                        <select id="wunsch1_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="wunsch1_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Wunschperson 2:</label>
+                    <div class="input-row">
+                        <select id="wunsch2_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="wunsch2_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Cliquen-Partner 2 der gesuchten Person:</label>
-                <div class="input-row">
-                    <select id="clique2_G">
-                        <option value="">Mann / Frau</option>
-                        <option value="M">Mann</option>
-                        <option value="F">Frau</option>
-                    </select>
-                    <select id="clique2_klasse">
-                        <option value="unbekannt">Klasse wählen</option>
-                        <option value="10a">10a</option>
-                        <option value="10b">10b</option>
-                        <option value="10c">10c</option>
-                        <option value="10d">10d</option>
-                        <option value="10e">10e</option>
-                    </select>
+            <div class="section">
+                <div class="section-header"><div class="section-title">3. Gesuchte Person</div></div>
+                <div class="form-group">
+                    <div class="input-row">
+                        <div style="flex: 1;">
+                            <label for="zielGeschlecht">Geschlecht:</label>
+                            <select id="zielGeschlecht"><option value="M">Mann</option><option value="F">Frau</option></select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="zielKlasse">Aktuelle Klasse:</label>
+                            <select id="zielKlasse"><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">4. Cliquenwünsche der gesuchten Person</div>
+                    <div class="optional-badge">Optional</div>
+                </div>
+                <div class="form-group">
+                    <label>Cliquen-Partner 1:</label>
+                    <div class="input-row">
+                        <select id="clique1_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="clique1_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cliquen-Partner 2:</label>
+                    <div class="input-row">
+                        <select id="clique2_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="clique2_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="berechneRechner()">Wahrscheinlichkeit berechnen</button>
+
+            <div id="rechner-result-box" class="result-box">
+                <div id="rechner-result-text" style="font-weight: 600; color: var(--text-secondary);">Die Wahrscheinlichkeit beträgt:</div>
+                <div id="rechner-result-value" class="result-value">0.00%</div>
+            </div>
+            <div id="rechner-simulator-box" class="simulator-box">
+                <div class="sim-title">🔮 Deine simulierte Zukunftsklasse:</div>
+                <div id="rechner-simulator-content" style="font-size:14px; line-height:1.5; color:var(--text-secondary);"></div>
             </div>
         </div>
 
-        <button class="btn" onclick="berechneUndZeigeAn()">Wahrscheinlichkeit berechnen</button>
+        <div id="match-page" class="page-content">
+            <div class="section">
+                <div class="section-header"><div class="section-title">1. Deine Basis-Daten</div></div>
+                <div class="form-group">
+                    <div class="input-row">
+                        <div style="flex: 1;">
+                            <label for="matchMeinG">Dein Geschlecht:</label>
+                            <select id="matchMeinG"><option value="M">Mann</option><option value="F">Frau</option></select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="matchMeineKlasse">Deine Klasse:</label>
+                            <select id="matchMeineKlasse"><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div id="result-box">
-            <div id="result-text" style="font-weight: 600; color: var(--text-secondary);">Die Wahrscheinlichkeit beträgt:</div>
-            <div id="result-value">0.00%</div>
+            <div class="section">
+                <div class="section-header"><div class="section-title">2. Vergleichsperson A</div></div>
+                <div class="form-group">
+                    <div class="input-row">
+                        <select id="persA_G"><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="persA_klasse"><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ihr Cliquen-Partner (Optional):</label>
+                    <div class="input-row">
+                        <select id="persAClique_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="persAClique_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><div class="section-title">3. Vergleichsperson B</div></div>
+                <div class="form-group">
+                    <div class="input-row">
+                        <select id="persB_G"><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="persB_klasse"><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ihr Cliquen-Partner (Optional):</label>
+                    <div class="input-row">
+                        <select id="persBClique_G"><option value="">Geschlecht</option><option value="M">Mann</option><option value="F">Frau</option></select>
+                        <select id="persBClique_klasse"><option value="unbekannt">Klasse wählen</option><option value="10a">10a</option><option value="10b">10b</option><option value="10c">10c</option><option value="10d">10d</option><option value="10e">10e</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="berechneMatchpartner()">Besten Matchpartner ermitteln</button>
+
+            <div id="match-result-box" class="result-box" style="background-color: #fef3c7; border: 1px solid #fde68a;">
+                <div style="font-weight: 700; color: #b45309; margin-bottom: 5px;">🔥 Das Kompatibilitäts-Ergebnis:</div>
+                <div id="match-result-content" style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;"></div>
+            </div>
         </div>
 
-        <div id="simulator-box">
-            <div class="sim-title">🔮 Deine simulierte Zukunftsklasse:</div>
-            <div id="simulator-content" class="sim-text"></div>
-        </div>
     </div>
 
     <div class="math-section">
@@ -397,9 +424,18 @@
     </div>
 
 <script>
-function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique) {
-    let chance = 0.20;
+// ZWISCHEN TABS WECHSELN
+function switchTab(pageId, btnElement) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(pageId).classList.add('active');
+    btnElement.classList.add('active');
+}
 
+// DIE REALE CORE-BERECHNUNGSFUNKTION (Deine exakte Logik)
+function berechneKernWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique) {
+    let chance = 0.20;
     let anzahlAlteKlasse = 0;
     let anzahlMaenner = 0;
     let anzahlFrauen = 0;
@@ -409,59 +445,39 @@ function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWue
     let zielGruppeNurMaenner = (zielGeschlecht === 'M');
     let zielGruppeNurFrauen = (zielGeschlecht === 'F');
 
-    // Set zur Speicherung ALLER einzigartigen Klassen, die im Formular ausgewählt wurden
     let klassenSet = new Set();
     klassenSet.add(meineKlasse);
 
-    // 1. Eigene Person auswerten
     if (meinGeschlecht === 'M') anzahlMaenner++; else anzahlFrauen++;
     anzahlAlteKlasse++; 
 
-    // 2. Deine Cliquenwünsche auswerten
     meineWuensche.forEach(w => {
         if (w.G === 'M') { anzahlMaenner++; meineGruppeNurFrauen = false; }
         else if (w.G === 'F') { anzahlFrauen++; meineGruppeNurMaenner = false; }
-        
         if (w.klasse !== "unbekannt") klassenSet.add(w.klasse);
-        if (w.klasse === meineKlasse) {
-            anzahlAlteKlasse++;
-        }
+        if (w.klasse === meineKlasse) anzahlAlteKlasse++;
     });
 
-    // 3. Zielperson auswerten
     if (zielGeschlecht === 'M') anzahlMaenner++; else anzahlFrauen++;
     klassenSet.add(zielKlasse);
     if (zielKlasse === meineKlasse) anzahlAlteKlasse++;
 
-    // 4. Cliquenwünsche der Zielperson auswerten
     zielClique.forEach(c => {
         if (c.G === 'M') { anzahlMaenner++; zielGruppeNurFrauen = false; }
         else if (c.G === 'F') { anzahlFrauen++; zielGruppeNurMaenner = false; }
-        
         if (c.klasse !== "unbekannt") klassenSet.add(c.klasse);
-        if (zielKlasse === meineKlasse && c.klasse === meineKlasse) {
-            anzahlAlteKlasse++;
-        }
+        if (zielKlasse === meineKlasse && c.klasse === meineKlasse) anzahlAlteKlasse++;
     });
 
-    // --- NEU: DIVERSITÄTS-CHECK DER URSPRUNGSKLASSEN ---
     let anzahlBeteiligtePersonen = 1 + meineWuensche.length + 1 + zielClique.length;
     let einzigartigeKlassenZahl = klassenSet.size;
 
-    if (einzigartigeKlassenZahl >= 3) {
-        // Extrem hoher Bonus, wenn die Leute bunt aus verschiedenen Klassen gewürfelt sind
-        chance *= 1.55; 
-    } else if (einzigartigeKlassenZahl === 1 && anzahlBeteiligtePersonen > 1) {
-        // Malus, wenn absolut ALLE Personen aus exakt derselben alten Klasse stammen
-        chance *= 0.70; 
-    }
+    if (einzigartigeKlassenZahl >= 3) chance *= 1.55; 
+    else if (einzigartigeKlassenZahl === 1 && anzahlBeteiligtePersonen > 1) chance *= 0.70; 
 
-    // --- ALTE LOGISCHE REGELN (UNBERÜHRT) ---
     if (meinGeschlecht !== zielGeschlecht) chance *= 1.35; else chance *= 0.85;
 
-    if (anzahlAlteKlasse > 1) {
-        chance *= Math.pow(0.85, anzahlAlteKlasse - 1);
-    }
+    if (anzahlAlteKlasse > 1) chance *= Math.pow(0.85, anzahlAlteKlasse - 1);
 
     let gesamtPersonen = anzahlMaenner + anzahlFrauen;
     if (anzahlMaenner / gesamtPersonen > 0.7) chance *= 0.65;
@@ -470,19 +486,17 @@ function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWue
         chance *= 1.60;
     }
 
-    // Harte Obergrenze
-    if (anzahlAlteKlasse > 10) {
-        return { prozent: "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)", fehler: true, alteKlasseZahl: anzahlAlteKlasse };
-    }
+    if (anzahlAlteKlasse > 10) return -1; // Code für Regelverstoß
 
     let endChance = chance * 0.98;
     if (endChance > 0.98) endChance = 0.98;
     if (endChance < 0.01) endChance = 0.01;
 
-    return { prozent: (endChance * 100).toFixed(2) + "%", fehler: false, alteKlasseZahl: anzahlAlteKlasse };
+    return endChance;
 }
 
-function berechneUndZeigeAn() {
+// SEITE 1: KLASSEN-RECHNER AUSFÜHREN
+function berechneRechner() {
     const meinGeschlecht = document.getElementById("meinGeschlecht").value;
     const meineKlasse = document.getElementById("meineKlasse").value;
     const zielGeschlecht = document.getElementById("zielGeschlecht").value;
@@ -500,42 +514,78 @@ function berechneUndZeigeAn() {
     const c2_G = document.getElementById("clique2_G").value;
     if (c2_G) zielClique.push({ G: c2_G, klasse: document.getElementById("clique2_klasse").value });
 
-    // Berechnen
-    const ergebnisObjekt = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique);
+    const ergebnis = berechneKernWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique);
 
-    // Wahrscheinlichkeitsbox anzeigen
-    const resultBox = document.getElementById("result-box");
-    const resultValue = document.getElementById("result-value");
-    const resultText = document.getElementById("result-text");
-    
-    if (ergebnisObjekt.fehler) {
-        resultText.innerText = "Hinweis:";
-        resultValue.style.color = "#dc2626"; 
-        document.getElementById("simulator-box").style.display = "none";
+    const resBox = document.getElementById("rechner-result-box");
+    const resVal = document.getElementById("rechner-result-value");
+    const resTxt = document.getElementById("rechner-result-text");
+    const simBox = document.getElementById("rechner-simulator-box");
+
+    if (ergebnis < 0) {
+        resTxt.innerText = "Hinweis:";
+        resVal.innerText = "0.00% (Verboten: Über 10 Personen aus einer alten Klasse!)";
+        resVal.style.color = "#dc2626";
+        simBox.style.display = "none";
     } else {
-        resultText.innerText = "Die Wahrscheinlichkeit beträgt:";
-        resultValue.style.color = "#4f46e5"; 
-        
-        // SIMULATOR TEXT GENERIEREN
-        const neueKlassenNamen = ["11A", "11B", "11C", "11D", "11E"];
-        const zufallsKlasse = neueKlassenNamen[Math.floor(Math.random() * neueKlassenNamen.length)];
-        
-        let simJungs = 14;
-        let simMaedchen = 14;
-        let simAlteKlasse = ergebnisObjekt.alteKlasseZahl;
+        resTxt.innerText = "Die Wahrscheinlichkeit beträgt:";
+        resVal.innerText = (ergebnis * 100).toFixed(2) + "%";
+        resVal.style.color = "#4f46e5";
 
-        const simBox = document.getElementById("simulator-box");
-        const simContent = document.getElementById("simulator-content");
-        
-        simContent.innerHTML = `Du wirst voraussichtlich in die neue Klasse <span class="sim-highlight">${zufallsKlasse}</span> kommen.<br>` +
-                               `Dort werden exakt <span class="sim-highlight">${simJungs} Jungs</span> und <span class="sim-highlight">${simMaedchen} Mädchen</span> mit dir lernen.<br>` +
-                               `Von deiner alten Klasse (<span class="sim-highlight">${meineKlasse}</span>) kommen genau <span class="sim-highlight">${simAlteKlasse} Personen</span> mit dir in diese neue Gruppe.`;
-        
+        // Simulator
+        let anzahlAlte = 1;
+        meineWuensche.forEach(w => { if(w.klasse === meineKlasse) anzahlAlte++; });
+        if(zielKlasse === meineKlasse) anzahlAlte++;
+        zielClique.forEach(c => { if(zielKlasse === meineKlasse && c.klasse === meineKlasse) anzahlAlte++; });
+
+        const neueKlassen = ["11A", "11B", "11C", "11D", "11E"];
+        document.getElementById("rechner-simulator-content").innerHTML = 
+            `Du wirst voraussichtlich in die neue Klasse <span class="sim-highlight">${neueKlassen[Math.floor(Math.random()*5)]}</span> kommen.<br>` +
+            `Dort werden exakt <span class="sim-highlight">14 Jungs</span> und <span class="sim-highlight">14 Mädchen</span> sein.<br>` +
+            `Von deiner alten Klasse (<span class="sim-highlight">${meineKlasse}</span>) kommen genau <span class="sim-highlight">${anzahlAlte} Personen</span> mit dir.`;
         simBox.style.display = "block";
     }
-    
-    resultValue.innerText = ergebnisObjekt.prozent;
-    resultBox.style.display = "block";
+    resBox.style.display = "block";
+}
+
+// SEITE 2: MATCHPARTNER FINDER AUSFÜHREN
+function berechneMatchpartner() {
+    const meinG = document.getElementById("matchMeinG").value;
+    const meineKlasse = document.getElementById("matchMeineKlasse").value;
+
+    // Person A Daten holen
+    const persA_G = document.getElementById("persA_G").value;
+    const persA_klasse = document.getElementById("persA_klasse").value;
+    const cliqueA = [];
+    const cA_G = document.getElementById("persAClique_G").value;
+    if (cA_G) cliqueA.push({ G: cA_G, klasse: document.getElementById("persAClique_klasse").value });
+
+    // Person B Daten holen
+    const persB_G = document.getElementById("persB_G").value;
+    const persB_klasse = document.getElementById("persB_klasse").value;
+    const cliqueB = [];
+    const cB_G = document.getElementById("persBClique_G").value;
+    if (cB_G) cliqueB.push({ G: cB_G, klasse: document.getElementById("persBClique_klasse").value });
+
+    // Beides berechnen (ohne eigene Cliquen-Wünsche auf dieser schnellen Vergleichsseite)
+    let ergA = berechneKernWahrscheinlichkeit(meinG, meineKlasse, [], persA_G, persA_klasse, cliqueA);
+    let ergB = berechneKernWahrscheinlichkeit(meinG, meineKlasse, [], persB_G, persB_klasse, cliqueB);
+
+    const matchBox = document.getElementById("match-result-box");
+    const matchContent = document.getElementById("match-result-content");
+
+    let textA = ergA < 0 ? "Regelverstoß (0.00%)" : (ergA * 100).toFixed(2) + "%";
+    let textB = ergB < 0 ? "Regelverstoß (0.00%)" : (ergB * 100).toFixed(2) + "%";
+
+    let gewinner = "Gleichstand oder unmöglich";
+    if (ergA > ergB) gewinner = "👑 Vergleichsperson A ist der bessere Matchpartner!";
+    else if (ergB > ergA) gewinner = "👑 Vergleichsperson B ist der bessere Matchpartner!";
+
+    matchContent.innerHTML = 
+        `Chance mit <strong>Vergleichsperson A:</strong> <span class="sim-highlight">${textA}</span><br>` +
+        `Chance mit <strong>Vergleichsperson B:</strong> <span class="sim-highlight">${textB}</span><br><br>` +
+        `<span style="font-size:16px; font-weight:800; color:#b45309;">${gewinner}</span>`;
+
+    matchBox.style.display = "block";
 }
 </script>
 
