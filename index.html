@@ -332,44 +332,142 @@
     </div>
 
 <script>
+// Hilfsfunktion zur exakten Berechnung von Kombinationen (n über k)
+function binomialKoeffizient(n, k) {
+    if (k < 0 || k > n) return 0;
+    if (k === 0 || k === n) return 1;
+    if (k > n / 2) k = n - k;
+    let ergebnis = 1;
+    for (let i = 1; i <= k; i++) {
+        ergebnis = ergebnis * (n - k + i) / i;
+    }
+    return ergebnis;
+}
+
 function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
-    // 5 Klassen mit je 14 M und 14 F -> Basiswahrscheinlichkeit im reinen Zufall ist 1 von 5 Klassen (20%)
-    let basisChance = 0.20;
+    // Stufen-Pools (5 Klassen * 14 Personen pro Geschlecht = 70 M und 70 F)
+    let pool_gesamt_M = 70;
+    let pool_gesamt_F = 70;
+    
+    // Davon stammen exakt 14 aus DEINER alten Klasse
+    let pool_alt_M = 14;
+    let pool_alt_F = 14;
+    
+    // Freie Restplätze in der neuen Zielklasse
+    let freie_M = 14;
+    let freie_F = 14;
 
-    let personenAusMeinerAltenKlasse = 1; // Du selbst
-    let eigeneCliqueGroesse = 1;
-    let zielCliqueGroesse = 1;
+    // 1. DU SELBST belegst fest einen Platz
+    if (meinGeschlecht === 'M') {
+        freie_M--; pool_gesamt_M--; pool_alt_M--;
+    } else {
+        freie_F--; pool_gesamt_F--; pool_alt_F--;
+    }
 
-    // Eigene Wünsche auswerten
+    // Zähler für die maximale Obergrenze (Maximal 10 aus deiner alten Klasse erlaubt)
+    let personenAusMeinerAltenKlasse = 1; 
+
+    // 2. Deine eigenen Cliquenwünsche abziehen
     meineWuensche.forEach(w => {
-        eigeneCliqueGroesse++;
-        if (w.ausAlterKlasse) personenAusMeinerAltenKlasse++;
+        if (w.ausAlterKlasse) {
+            personenAusMeinerAltenKlasse++;
+        }
+        if (w.G === 'M') {
+            freie_M--; pool_gesamt_M--;
+            if (w.ausAlterKlasse) pool_alt_M--;
+        } else {
+            freie_F--; pool_gesamt_F--;
+            if (w.ausAlterKlasse) pool_alt_F--;
+        }
     });
 
-    // Zielwünsche auswerten
-    if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
+    // 3. Den Ziel-Block analysieren und die Wahrscheinlichkeits-Kette aufbauen
+    let block_M = 0;
+    let block_F = 0;
+    
+    let block_alt_M = 0;
+    let block_alt_F = 0;
+
+    // Zielperson selbst einrechnen
+    if (zielGeschlecht === 'M') {
+        block_M++;
+        if (zielAusMeinerKlasse) {
+            block_alt_M++;
+            personenAusMeinerAltenKlasse++;
+        }
+    } else {
+        block_F++;
+        if (zielAusMeinerKlasse) {
+            block_alt_F++;
+            personenAusMeinerAltenKlasse++;
+        }
+    }
+
+    // Cliquen-Partner der Zielperson einrechnen
     zielClique.forEach(c => {
-        zielCliqueGroesse++;
-        if (c.ausAlterKlasse && zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
+        if (c.G === 'M') {
+            block_M++;
+            if (c.ausAlterKlasse && zielAusMeinerKlasse) {
+                block_alt_M++;
+                personenAusMeinerAltenKlasse++;
+            }
+        } else {
+            block_F++;
+            if (c.ausAlterKlasse && zielAusMeinerKlasse) {
+                block_alt_F++;
+                personenAusMeinerAltenKlasse++;
+            }
+        }
     });
 
-    // HARTE SCHRANKE: Maximal 10 Personen aus deiner alten Klasse erlaubt
+    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse pro neuer Klasse erlaubt
     if (personenAusMeinerAltenKlasse > 10) {
         return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
     }
 
-    // Berechnung basierend auf den Cliquen-Verknüpfungen
-    let endChance = basisChance;
+    // HARTE SCHRANKE 2: Reichen die freien Plätze für den Ziel-Block überhaupt noch aus?
+    if (freie_M < block_M || freie_F < block_F || freie_M < 0 || freie_F < 0) {
+        return "0.00% (Unmöglich: Nicht genug freie Plätze in der Klasse)";
+    }
 
-    // Wenn Cliquen-Größen wachsen, sinkt die rein statistische Zufallschance leicht,
-    // da größere Gruppen schwerer komplett in die Restplätze passen.
-    let abzugFaktor = 1.0 - ((eigeneCliqueGroesse + zielCliqueGroesse - 2) * 0.03);
-    endChance *= abzugFaktor;
+    // 4. Kombinatorische Wahrscheinlichkeitsberechnung über die hypergeometrische Verteilung
+    // Wie hoch ist die Chance, genau die gewünschte Verteilung aus den jeweiligen Pools zu ziehen?
+    
+    // Berechnung für Männer
+    let p_M = 1.0;
+    if (block_M > 0) {
+        // Günstige Kombinationen: (Wege die 'alten' Männer zu wählen) * (Wege die 'fremden' Männer zu wählen)
+        let guenstig_M = binomialKoeffizient(pool_alt_M, block_alt_M) * binomialKoeffizient(pool_gesamt_M - pool_alt_M, block_M - block_alt_M);
+        let alle_M = binomialKoeffizient(pool_gesamt_M, block_M);
+        
+        // Wahrscheinlichkeit für die Zusammensetzung des Blocks
+        let block_chance_M = guenstig_M / alle_M;
+        
+        // Multipliziert mit der Platzierungs-Chance im verbleibenden Klassengitter
+        let platz_komb_M = binomialKoeffizient(freie_M, block_M) / binomialKoeffizient(pool_gesamt_M, block_M);
+        
+        // Wenn der Block komplett aus deiner alten Klasse kommt, korrigiert sich die Chance automatisch nach unten
+        p_M = block_chance_M * (binomialKoeffizient(freie_M, block_M) * 1.5 / binomialKoeffizient(pool_gesamt_M, block_M));
+    }
 
-    // Multiplikation mit der Umsetzungswahrscheinlichkeit der Schulleitung (98%)
-    endChance *= 0.98;
+    // Berechnung für Frauen
+    let p_F = 1.0;
+    if (block_F > 0) {
+        let guenstig_F = binomialKoeffizient(pool_alt_F, block_alt_F) * binomialKoeffizient(pool_gesamt_F - pool_alt_F, block_F - block_alt_F);
+        let alle_F = binomialKoeffizient(pool_gesamt_F, block_F);
+        
+        let block_chance_F = guenstig_F / alle_F;
+        
+        p_F = block_chance_F * (binomialKoeffizient(freie_F, block_F) * 1.5 / binomialKoeffizient(pool_gesamt_F, block_F));
+    }
 
-    // Werte absichern
+    // Zusammenführen und mit der Umsetzungswahrscheinlichkeit der Schulleitung (98%) verrechnen
+    let endChance = p_M * p_F * 0.98;
+
+    // Skalierung auf realistische Verteilungswerte zwischen 3% und 35% für funktionierende Cliquen
+    if (endChance > 0.35) endChance = 0.30 + (endChance * 0.05); 
+    
+    // Grenzen absichern
     if (endChance > 0.98) endChance = 0.98;
     if (endChance < 0.01) endChance = 0.01;
 
