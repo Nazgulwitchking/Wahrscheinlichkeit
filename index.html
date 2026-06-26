@@ -4,8 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klassen-Wahrscheinlichkeits-Rechner</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/solid.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <style>
         :root {
             --primary: #4f46e5;
@@ -188,8 +198,8 @@
 
         .math-formula {
             overflow-x: auto;
-            padding: 10px 0;
-            font-size: 12px;
+            padding: 15px 0;
+            font-size: 14px;
             text-align: center;
         }
     </style>
@@ -229,7 +239,7 @@
                     </select>
                     <label class="checkbox-group">
                         <input type="checkbox" id="wunsch1_alt">
-                        Aus meiner alten Gruppe
+                        Aus meiner alten Klasse
                     </label>
                 </div>
             </div>
@@ -244,7 +254,7 @@
                     </select>
                     <label class="checkbox-group">
                         <input type="checkbox" id="wunsch2_alt">
-                        Aus meiner alten Gruppe
+                        Aus meiner alten Klasse
                     </label>
                 </div>
             </div>
@@ -263,7 +273,7 @@
                     </select>
                     <label class="checkbox-group">
                         <input type="checkbox" id="ziel_alt" checked>
-                        Aus meiner alten Gruppe
+                        Aus meiner alten Klasse
                     </label>
                 </div>
             </div>
@@ -285,7 +295,7 @@
                     </select>
                     <label class="checkbox-group">
                         <input type="checkbox" id="clique1_alt">
-                        Aus ihrer alten Gruppe
+                        Aus ihrer alten Klasse
                     </label>
                 </div>
             </div>
@@ -300,7 +310,7 @@
                     </select>
                     <label class="checkbox-group">
                         <input type="checkbox" id="clique2_alt">
-                        Aus ihrer alten Gruppe
+                        Aus ihrer alten Klasse
                     </label>
                 </div>
             </div>
@@ -322,96 +332,98 @@
     </div>
 
 <script>
-function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerGruppe, zielClique) {
+function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
     let gesamtPoolZielgeschlecht = 70; 
-    let alteGruppePoolZielgeschlecht = 14; 
-    let freiePlaetze = 14; 
+    let freiePlaetzeZielgeschlecht = 14; 
+    let poolAusEigenerKlasseZielgeschlecht = 14; 
 
-    // Tracker für die Personenanzahl aus DEINER alten Gruppe
-    let personenAusMeinerAltenGruppe = 1; // Du selbst
+    // Obergrenzen-Prüfung für DEINE alte Klasse
+    let personenAusMeinerAltenKlasse = 1; // Du selbst
 
-    // Abzug durch DICH selbst
+    // 1. Auswertung DEINER eigenen Person
     if (meinGeschlecht === zielGeschlecht) {
-        freiePlaetze -= 1;
+        freiePlaetzeZielgeschlecht -= 1;
         gesamtPoolZielgeschlecht -= 1;
-        alteGruppePoolZielgeschlecht -= 1; 
+        poolAusEigenerKlasseZielgeschlecht -= 1;
     }
 
-    // Abzug durch DEINE Wünsche
+    // 2. Auswertung DEINER Wünsche
     meineWuensche.forEach(wunsch => {
-        if (wunsch.ausAlterGruppe) {
-            personenAusMeinerAltenGruppe += 1;
+        if (wunsch.ausAlterKlasse) {
+            personenAusMeinerAltenKlasse += 1;
         }
         if (wunsch.G === zielGeschlecht) {
-            freiePlaetze -= 1;
+            freiePlaetzeZielgeschlecht -= 1;
             gesamtPoolZielgeschlecht -= 1;
-            if (wunsch.ausAlterGruppe) {
-                alteGruppePoolZielgeschlecht -= 1; 
+            if (wunsch.ausAlterKlasse) {
+                poolAusEigenerKlasseZielgeschlecht -= 1;
             }
         }
     });
 
-    // Bestimme Blockgröße und Herkunft der Zielperson-Clique
-    let blockGroesse = 1; 
-    let zielPersonenAusMeinerAltenGruppeImBlock = 0; 
+    // 3. Wie viele Personen bringt der "Block" der Zielperson mit?
+    let blockGroesseGleich = 0; 
+    let blockAusMeinerAltenKlasse = 0; 
 
-    if (zielAusMeinerGruppe) {
-        zielPersonenAusMeinerAltenGruppeImBlock += 1;
-        personenAusMeinerAltenGruppe += 1;
+    // Die Zielperson selbst auswerten
+    if (zielGeschlecht === zielGeschlecht) {
+        blockGroesseGleich += 1; 
+        if (zielAusMeinerKlasse) {
+            blockAusMeinerAltenKlasse += 1;
+            personenAusMeinerAltenKlasse += 1;
+        }
     }
 
+    // Die Cliquenwünsche der Zielperson auswerten
     if (zielClique && zielClique.length > 0) {
         zielClique.forEach(wunsch => {
-            if (wunsch.ausAlterGruppe) {
-                // Wenn die Zielperson aus deiner Gruppe ist, bedeutet "ihre alte Gruppe" auch DEINE alte Gruppe
-                if (zielAusMeinerGruppe) {
-                    zielPersonenAusMeinerAltenGruppeImBlock += 1;
-                    personenAusMeinerAltenGruppe += 1;
-                }
+            if (wunsch.ausAlterKlasse && zielAusMeinerKlasse) {
+                blockAusMeinerAltenKlasse += 1;
+                personenAusMeinerAltenKlasse += 1;
             }
             if (wunsch.G === zielGeschlecht) {
-                blockGroesse += 1;
+                blockGroesseGleich += 1;
             }
         });
     }
 
-    // HARTE SCHRANKE: Maximal 10 Personen aus deiner alten Gruppe in einer neuen erlaubt
-    if (personenAusMeinerAltenGruppe > 10) {
-        return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Gruppe!)";
+    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse erlaubt
+    if (personenAusMeinerAltenKlasse > 10) {
+        return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
     }
 
-    // Sicherheits-Checks für verfügbare Plätze
-    if (freiePlaetze < blockGroesse || alteGruppePoolZielgeschlecht < zielPersonenAusMeinerAltenGruppeImBlock || freiePlaetze < 0 || alteGruppePoolZielgeschlecht < 0) {
+    // HARTE SCHRANKE 2: Gibt es überhaupt genug freie Plätze?
+    if (freiePlaetzeZielgeschlecht < blockGroesseGleich || freiePlaetzeZielgeschlecht < 0) {
         return "0.00% (Unmöglich: Nicht genug freie Plätze vorhanden)";
     }
 
-    // Wahrscheinlichkeits-Kette berechnen (Ziehen ohne Zurücklegen)
+    // 4. Wahrscheinlichkeits-Kette berechnen (Ziehen ohne Zurücklegen)
     let wahrscheinlichkeit = 1.0;
-    let aktuellerGesamtPool = gesamtPoolZielgeschlecht;
-    let aktuellerAlteGruppePool = alteGruppePoolZielgeschlecht;
+    let verbleibenderGesamtPool = gesamtPoolZielgeschlecht;
+    let verbleibenderEigeneKlassePool = poolAusEigenerKlasseZielgeschlecht;
 
-    for (let i = 0; i < blockGroesse; i++) {
-        if (i < zielPersonenAusMeinerAltenGruppeImBlock) {
-            wahrscheinlichkeit *= (aktuellerAlteGruppePool / aktuellerGesamtPool);
-            aktuellerAlteGruppePool -= 1;
+    for (let i = 0; i < blockGroesseGleich; i++) {
+        if (i < blockAusMeinerAltenKlasse) {
+            wahrscheinlichkeit *= (verbleibenderEigeneKlassePool / verbleibenderGesamtPool);
+            verbleibenderEigeneKlassePool -= 1;
         } else {
-            let andereGruppenPool = aktuellerGesamtPool - aktuellerAlteGruppePool;
-            wahrscheinlichkeit *= (andereGruppenPool / aktuellerGesamtPool);
+            let fremdKlassenPool = verbleibenderGesamtPool - verbleibenderEigeneKlassePool;
+            wahrscheinlichkeit *= (fremdKlassenPool / verbleibenderGesamtPool);
         }
-        aktuellerGesamtPool -= 1;
+        verbleibenderGesamtPool -= 1;
     }
 
     // Kombinations-Korrekturfaktor
     let kombinationen = 1;
-    for(let i = 0; i < blockGroesse; i++) {
-        kombinationen *= (freiePlaetze - i) / (i + 1);
+    for(let i = 0; i < blockGroesseGleich; i++) {
+        kombinationen *= (freiePlaetzeZielgeschlecht - i) / (i + 1);
     }
     wahrscheinlichkeit *= kombinationen;
 
-    // 98% Umsetzungswahrscheinlichkeit
+    // Multiplikation mit der 98% Umsetzungswahrscheinlichkeit
     wahrscheinlichkeit *= 0.98;
 
-    if(wahrscheinlichkeit > 1) wahrscheinlichkeit = 1;
+    if(wahrscheinlichkeit > 0.98) wahrscheinlichkeit = 0.98;
     if(wahrscheinlichkeit < 0) wahrscheinlichkeit = 0;
 
     return (wahrscheinlichkeit * 100).toFixed(2) + "%";
@@ -420,32 +432,32 @@ function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGe
 function berechneUndZeigeAn() {
     const meinGeschlecht = document.getElementById("meinGeschlecht").value;
     const zielGeschlecht = document.getElementById("zielGeschlecht").value;
-    const zielAusMeinerGruppe = document.getElementById("ziel_alt").checked;
+    const zielAusMeinerKlasse = document.getElementById("ziel_alt").checked;
 
     // Eigene Wünsche auslesen
     const meineWuensche = [];
     const w1_G = document.getElementById("wunsch1_G").value;
     if (w1_G) {
-        meineWuensche.push({ G: w1_G, ausAlterGruppe: document.getElementById("wunsch1_alt").checked });
+        meineWuensche.push({ G: w1_G, ausAlterKlasse: document.getElementById("wunsch1_alt").checked });
     }
     const w2_G = document.getElementById("wunsch2_G").value;
     if (w2_G) {
-        meineWuensche.push({ G: w2_G, ausAlterGruppe: document.getElementById("wunsch2_alt").checked });
+        meineWuensche.push({ G: w2_G, ausAlterKlasse: document.getElementById("wunsch2_alt").checked });
     }
 
     // Cliquen-Wünsche der Zielperson auslesen
     const zielClique = [];
     const c1_G = document.getElementById("clique1_G").value;
     if (c1_G) {
-        zielClique.push({ G: c1_G, ausAlterGruppe: document.getElementById("clique1_alt").checked });
+        zielClique.push({ G: c1_G, ausAlterKlasse: document.getElementById("clique1_alt").checked });
     }
     const c2_G = document.getElementById("clique2_G").value;
     if (c2_G) {
-        zielClique.push({ G: c2_G, ausAlterGruppe: document.getElementById("clique2_alt").checked });
+        zielClique.push({ G: c2_G, ausAlterKlasse: document.getElementById("clique2_alt").checked });
     }
 
     // Berechnen
-    const ergebnis = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerGruppe, zielClique);
+    const ergebnis = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique);
 
     // Anzeigen
     const resultBox = document.getElementById("result-box");
