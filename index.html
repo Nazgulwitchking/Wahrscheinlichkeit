@@ -332,107 +332,48 @@
     </div>
 
 <script>
-// Hilfsfunktion zur exakten Berechnung von Binomialkoeffizienten (n über k)
-function binomialKoeffizient(n, k) {
-    if (k < 0 || k > n) return 0;
-    if (k === 0 || k === n) return 1;
-    if (k > n / 2) k = n - k;
-    let ergebnis = 1;
-    for (let i = 1; i <= k; i++) {
-        ergebnis = ergebnis * (n - k + i) / i;
-    }
-    return ergebnis;
-}
-
 function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
-    // Gesamtpools der Stufe (5 Klassen x 14 Personen)
-    let pool_gesamt_M = 70;
-    let pool_gesamt_F = 70;
-    
-    let freie_plaetze_M = 14;
-    let freie_plaetze_F = 14;
+    // 5 Klassen mit je 14 M und 14 F -> Basiswahrscheinlichkeit im reinen Zufall ist 1 von 5 Klassen (20%)
+    let basisChance = 0.20;
 
-    // 1. DU SELBST belegst fest einen Platz
-    if (meinGeschlecht === 'M') {
-        freie_plaetze_M--; pool_gesamt_M--;
-    } else {
-        freie_plaetze_F--; pool_gesamt_F--;
-    }
+    let personenAusMeinerAltenKlasse = 1; // Du selbst
+    let eigeneCliqueGroesse = 1;
+    let zielCliqueGroesse = 1;
 
-    // Tracker für die Obergrenze aus deiner alten Klasse (Maximal 10)
-    let personenAusMeinerAltenKlasse = 1; 
-
-    // 2. Deine eigenen Cliquenwünsche abziehen (ziehen feste Plätze ab)
+    // Eigene Wünsche auswerten
     meineWuensche.forEach(w => {
+        eigeneCliqueGroesse++;
         if (w.ausAlterKlasse) personenAusMeinerAltenKlasse++;
-        if (w.G === 'M') {
-            freie_plaetze_M--; pool_gesamt_M--;
-        } else {
-            freie_plaetze_F--; pool_gesamt_F--;
-        }
     });
 
-    // 3. Den zu ziehenden Block der Zielperson bestimmen
-    let block_M = 0;
-    let block_F = 0;
-
-    if (zielGeschlecht === 'M') {
-        block_M++;
-        if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
-    } else {
-        block_F++;
-        if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
-    }
-
+    // Zielwünsche auswerten
+    if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
     zielClique.forEach(c => {
+        zielCliqueGroesse++;
         if (c.ausAlterKlasse && zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
-        if (c.G === 'M') {
-            block_M++;
-        } else {
-            block_F++;
-        }
     });
 
-    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse pro neuer Klasse erlaubt
+    // HARTE SCHRANKE: Maximal 10 Personen aus deiner alten Klasse erlaubt
     if (personenAusMeinerAltenKlasse > 10) {
         return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
     }
 
-    // HARTE SCHRANKE 2: Gibt es überhaupt noch genug freie Plätze für diesen Block?
-    if (freie_plaetze_M < block_M || freie_plaetze_F < block_F || freie_plaetze_M < 0 || freie_plaetze_F < 0) {
-        return "0.00% (Unmöglich: Nicht genug freie Plätze in der Klasse)";
-    }
+    // Berechnung basierend auf den Cliquen-Verknüpfungen
+    let endChance = basisChance;
 
-    // 4. Hypergeometrische Verteilung: Wie wahrscheinlich ist es, dass genau dieser Block in die verbleibenden freien Plätze fällt?
-    // Formel: (Kombinationen des Blocks in den freien Plätzen) / (Gesamte Kombinationen, die Plätze zu füllen)
-    
-    // Wahrscheinlichkeit für den Männer-Block
-    let chance_M = 1.0;
-    if (block_M > 0) {
-        let günstige_wege_M = binomialKoeffizient(pool_gesamt_M - block_M, freie_plaetze_M - block_M);
-        let alle_wege_M = binomialKoeffizient(pool_gesamt_M, freie_plaetze_M);
-        chance_M = günstige_wege_M / alle_wege_M;
-    }
+    // Wenn Cliquen-Größen wachsen, sinkt die rein statistische Zufallschance leicht,
+    // da größere Gruppen schwerer komplett in die Restplätze passen.
+    let abzugFaktor = 1.0 - ((eigeneCliqueGroesse + zielCliqueGroesse - 2) * 0.03);
+    endChance *= abzugFaktor;
 
-    // Wahrscheinlichkeit für den Frauen-Block
-    let chance_F = 1.0;
-    if (block_F > 0) {
-        let günstige_wege_F = binomialKoeffizient(pool_gesamt_F - block_F, freie_plaetze_F - block_F);
-        let alle_wege_F = binomialKoeffizient(pool_gesamt_F, freie_plaetze_F);
-        chance_F = günstige_wege_F / alle_wege_F;
-    }
+    // Multiplikation mit der Umsetzungswahrscheinlichkeit der Schulleitung (98%)
+    endChance *= 0.98;
 
-    // Zusammenführung der Wahrscheinlichkeiten
-    let endWahrscheinlichkeit = chance_M * chance_F;
+    // Werte absichern
+    if (endChance > 0.98) endChance = 0.98;
+    if (endChance < 0.01) endChance = 0.01;
 
-    // Multiplikation mit der 98% Umsetzungswahrscheinlichkeit der Schulleitung
-    endWahrscheinlichkeit *= 0.98;
-
-    // Absicherung der Grenzwerte
-    if (endWahrscheinlichkeit > 0.98) endWahrscheinlichkeit = 0.98;
-    if (endWahrscheinlichkeit < 0) endWahrscheinlichkeit = 0;
-
-    return (endWahrscheinlichkeit * 100).toFixed(2) + "%";
+    return (endChance * 100).toFixed(2) + "%";
 }
 
 function berechneUndZeigeAn() {
