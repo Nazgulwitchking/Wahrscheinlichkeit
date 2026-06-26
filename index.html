@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klassen-Wahrscheinlichkeits-Rechner</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/dist/solid.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #cbd5e1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .main-title {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 8px;
+            max-width: 700px;
+        }
+
+        .sub-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: left;
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 24px;
+            padding-left: 5px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 650px;
+            box-sizing: border-box;
+        }
+
+        .section {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 22px;
+            margin-bottom: 22px;
+        }
+
+        .section:last-of-type {
+            border-bottom: none;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .optional-badge {
+            font-size: 12px;
+            color: #64748b;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        select {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            text-align: center;
+            display: none;
+        }
+
+        #result-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+
+        .math-section {
+            width: 100%;
+            max-width: 650px;
+            margin-top: 40px;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+
+        .math-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .math-formula {
+            overflow-x: auto;
+            padding: 10px 0;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-title">Wahrscheinlichkeit für das zusammenkommen innerhalb der neuen Klassen</div>
+    <div class="sub-title">Fülle die Felder aus und drücke auf „berechnen“ um die wahrscheinlichkeit zu erhalten.</div>
+
+    <div class="container">
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">1. Deine Daten</div>
+            </div>
+            <div class="form-group">
+                <label for="meinGeschlecht">Dein Geschlecht:</label>
+                <select id="meinGeschlecht">
+                    <option value="M">Mann</option>
+                    <option value="F">Frau</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">2. Deine Cliquenwünsche</div>
+                <div class="optional-badge">Dieses Feld ist optional</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Wunschperson 1:</label>
+                <div class="input-row">
+                    <select id="wunsch1_G">
+                        <option value="">Mann / Frau</option>
+                        <option value="M">Mann</option>
+                        <option value="F">Frau</option>
+                    </select>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="wunsch1_alt">
+                        Aus meiner alten Gruppe
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Wunschperson 2:</label>
+                <div class="input-row">
+                    <select id="wunsch2_G">
+                        <option value="">Mann / Frau</option>
+                        <option value="M">Mann</option>
+                        <option value="F">Frau</option>
+                    </select>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="wunsch2_alt">
+                        Aus meiner alten Gruppe
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">3. Gesuchte Person</div>
+            </div>
+            <div class="form-group">
+                <label for="zielGeschlecht">Geschlecht der gesuchten Person:</label>
+                <div class="input-row">
+                    <select id="zielGeschlecht">
+                        <option value="M">Mann</option>
+                        <option value="F">Frau</option>
+                    </select>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="ziel_alt" checked>
+                        Aus meiner alten Gruppe
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">4. Cliquenwünsche der gesuchten Person</div>
+                <div class="optional-badge">Dieses Feld ist optional</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Cliquen-Partner 1 der gesuchten Person:</label>
+                <div class="input-row">
+                    <select id="clique1_G">
+                        <option value="">Mann / Frau</option>
+                        <option value="M">Mann</option>
+                        <option value="F">Frau</option>
+                    </select>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="clique1_alt">
+                        Aus ihrer alten Gruppe
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Cliquen-Partner 2 der gesuchten Person:</label>
+                <div class="input-row">
+                    <select id="clique2_G">
+                        <option value="">Mann / Frau</option>
+                        <option value="M">Mann</option>
+                        <option value="F">Frau</option>
+                    </select>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="clique2_alt">
+                        Aus ihrer alten Gruppe
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="berechneUndZeigeAn()">Wahrscheinlichkeit berechnen</button>
+
+        <div id="result-box">
+            <div id="result-text" style="font-weight: 600; color: var(--text-secondary);">Die Wahrscheinlichkeit beträgt:</div>
+            <div id="result-value">0.00%</div>
+        </div>
+    </div>
+
+    <div class="math-section">
+        <div class="math-title">Die Funktion, die die Wahrscheinlichkeit berechnet:</div>
+        <div class="math-formula">
+            $$ P(\text{Match}) = 0.98 \cdot \prod_{g \in \{M,F\}} \left[ \frac{\prod_{i=0}^{b_g-1} (A_{g, \text{pool}} \cdot \mathbb{I}_{A}(i) + (N_{g, \text{pool}} - A_{g, \text{pool}}) \cdot (1 - \mathbb{I}_{A}(i)) - i)}{\prod_{i=0}^{b_g-1} (N_{g, \text{pool}} - i)} \cdot \binom{\text{freie}_g}{b_g} \right] \cdot \prod_{k=1}^5 \mathcal{H}(\sum \text{aktiv}_k \le 10) $$
+        </div>
+    </div>
+
+<script>
+function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerGruppe, zielClique) {
+    let gesamtPoolZielgeschlecht = 70; 
+    let alteGruppePoolZielgeschlecht = 14; 
+    let freiePlaetze = 14; 
+
+    // Tracker für die Personenanzahl aus DEINER alten Gruppe
+    let personenAusMeinerAltenGruppe = 1; // Du selbst
+
+    // Abzug durch DICH selbst
+    if (meinGeschlecht === zielGeschlecht) {
+        freiePlaetze -= 1;
+        gesamtPoolZielgeschlecht -= 1;
+        alteGruppePoolZielgeschlecht -= 1; 
+    }
+
+    // Abzug durch DEINE Wünsche
+    meineWuensche.forEach(wunsch => {
+        if (wunsch.ausAlterGruppe) {
+            personenAusMeinerAltenGruppe += 1;
+        }
+        if (wunsch.G === zielGeschlecht) {
+            freiePlaetze -= 1;
+            gesamtPoolZielgeschlecht -= 1;
+            if (wunsch.ausAlterGruppe) {
+                alteGruppePoolZielgeschlecht -= 1; 
+            }
+        }
+    });
+
+    // Bestimme Blockgröße und Herkunft der Zielperson-Clique
+    let blockGroesse = 1; 
+    let zielPersonenAusMeinerAltenGruppeImBlock = 0; 
+
+    if (zielAusMeinerGruppe) {
+        zielPersonenAusMeinerAltenGruppeImBlock += 1;
+        personenAusMeinerAltenGruppe += 1;
+    }
+
+    if (zielClique && zielClique.length > 0) {
+        zielClique.forEach(wunsch => {
+            if (wunsch.ausAlterGruppe) {
+                // Wenn die Zielperson aus deiner Gruppe ist, bedeutet "ihre alte Gruppe" auch DEINE alte Gruppe
+                if (zielAusMeinerGruppe) {
+                    zielPersonenAusMeinerAltenGruppeImBlock += 1;
+                    personenAusMeinerAltenGruppe += 1;
+                }
+            }
+            if (wunsch.G === zielGeschlecht) {
+                blockGroesse += 1;
+            }
+        });
+    }
+
+    // HARTE SCHRANKE: Maximal 10 Personen aus deiner alten Gruppe in einer neuen erlaubt
+    if (personenAusMeinerAltenGruppe > 10) {
+        return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Gruppe!)";
+    }
+
+    // Sicherheits-Checks für verfügbare Plätze
+    if (freiePlaetze < blockGroesse || alteGruppePoolZielgeschlecht < zielPersonenAusMeinerAltenGruppeImBlock || freiePlaetze < 0 || alteGruppePoolZielgeschlecht < 0) {
+        return "0.00% (Unmöglich: Nicht genug freie Plätze vorhanden)";
+    }
+
+    // Wahrscheinlichkeits-Kette berechnen (Ziehen ohne Zurücklegen)
+    let wahrscheinlichkeit = 1.0;
+    let aktuellerGesamtPool = gesamtPoolZielgeschlecht;
+    let aktuellerAlteGruppePool = alteGruppePoolZielgeschlecht;
+
+    for (let i = 0; i < blockGroesse; i++) {
+        if (i < zielPersonenAusMeinerAltenGruppeImBlock) {
+            wahrscheinlichkeit *= (aktuellerAlteGruppePool / aktuellerGesamtPool);
+            aktuellerAlteGruppePool -= 1;
+        } else {
+            let andereGruppenPool = aktuellerGesamtPool - aktuellerAlteGruppePool;
+            wahrscheinlichkeit *= (andereGruppenPool / aktuellerGesamtPool);
+        }
+        aktuellerGesamtPool -= 1;
+    }
+
+    // Kombinations-Korrekturfaktor
+    let kombinationen = 1;
+    for(let i = 0; i < blockGroesse; i++) {
+        kombinationen *= (freiePlaetze - i) / (i + 1);
+    }
+    wahrscheinlichkeit *= kombinationen;
+
+    // 98% Umsetzungswahrscheinlichkeit
+    wahrscheinlichkeit *= 0.98;
+
+    if(wahrscheinlichkeit > 1) wahrscheinlichkeit = 1;
+    if(wahrscheinlichkeit < 0) wahrscheinlichkeit = 0;
+
+    return (wahrscheinlichkeit * 100).toFixed(2) + "%";
+}
+
+function berechneUndZeigeAn() {
+    const meinGeschlecht = document.getElementById("meinGeschlecht").value;
+    const zielGeschlecht = document.getElementById("zielGeschlecht").value;
+    const zielAusMeinerGruppe = document.getElementById("ziel_alt").checked;
+
+    // Eigene Wünsche auslesen
+    const meineWuensche = [];
+    const w1_G = document.getElementById("wunsch1_G").value;
+    if (w1_G) {
+        meineWuensche.push({ G: w1_G, ausAlterGruppe: document.getElementById("wunsch1_alt").checked });
+    }
+    const w2_G = document.getElementById("wunsch2_G").value;
+    if (w2_G) {
+        meineWuensche.push({ G: w2_G, ausAlterGruppe: document.getElementById("wunsch2_alt").checked });
+    }
+
+    // Cliquen-Wünsche der Zielperson auslesen
+    const zielClique = [];
+    const c1_G = document.getElementById("clique1_G").value;
+    if (c1_G) {
+        zielClique.push({ G: c1_G, ausAlterGruppe: document.getElementById("clique1_alt").checked });
+    }
+    const c2_G = document.getElementById("clique2_G").value;
+    if (c2_G) {
+        zielClique.push({ G: c2_G, ausAlterGruppe: document.getElementById("clique2_alt").checked });
+    }
+
+    // Berechnen
+    const ergebnis = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerGruppe, zielClique);
+
+    // Anzeigen
+    const resultBox = document.getElementById("result-box");
+    const resultValue = document.getElementById("result-value");
+    const resultText = document.getElementById("result-text");
+    
+    if (ergebnis.includes("Verboten") || ergebnis.includes("Unmöglich")) {
+        resultText.innerText = "Hinweis:";
+        resultValue.style.color = "#dc2626"; 
+    } else {
+        resultText.innerText = "Die Wahrscheinlichkeit beträgt:";
+        resultValue.style.color = "#4f46e5"; 
+    }
+    
+    resultValue.innerText = ergebnis;
+    resultBox.style.display = "block";
+}
+</script>
+
+</body>
+</html>
