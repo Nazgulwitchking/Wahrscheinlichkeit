@@ -327,106 +327,112 @@
     <div class="math-section">
         <div class="math-title">Die Funktion, die die Wahrscheinlichkeit berechnet:</div>
         <div class="math-formula">
-            $$ P(\text{Match}) = 0.98 \cdot \prod_{g \in \{M,F\}} \left[ \frac{\prod_{i=0}^{b_g-1} (A_{g, \text{pool}} \cdot \mathbb{I}_{A}(i) + (N_{g, \text{pool}} - A_{g, \text{pool}}) \cdot (1 - \mathbb{I}_{A}(i)) - i)}{\prod_{i=0}^{b_g-1} (N_{g, \text{pool}} - i)} \cdot \binom{\text{freie}_g}{b_g} \right] \cdot \prod_{k=1}^5 \mathcal{H}(\sum \text{aktiv}_k \le 10) $$
+            $$ P(\text{Match}) = 0.98 \cdot \prod_{g \in \{M,F\}} \left[ \frac{\prod_{i=0}^{b_g-1} (A_{g, \text{pool}} \cdot \mathbb{I}_{A}(i) + (N_{g, \text{pool}} - A_{g, \text{pool}}) \cdot (1 - \mathbb{I}(i)) - i)}{\prod_{i=0}^{b_g-1} (N_{g, \text{pool}} - i)} \cdot \binom{\text{freie}_g}{b_g} \right] \cdot \prod_{k=1}^5 \mathcal{H}(\sum \text{aktiv}_k \le 10) $$
         </div>
     </div>
 
 <script>
+// Hilfsfunktion zur exakten Berechnung von Binomialkoeffizienten (n über k)
+function binomialKoeffizient(n, k) {
+    if (k < 0 || k > n) return 0;
+    if (k === 0 || k === n) return 1;
+    if (k > n / 2) k = n - k;
+    let ergebnis = 1;
+    for (let i = 1; i <= k; i++) {
+        ergebnis = ergebnis * (n - k + i) / i;
+    }
+    return ergebnis;
+}
+
 function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
-    let gesamtPoolZielgeschlecht = 70; 
-    let freiePlaetzeZielgeschlecht = 14; 
-    let poolAusEigenerKlasseZielgeschlecht = 14; 
+    // Gesamtpools der Stufe (5 Klassen x 14 Personen)
+    let pool_gesamt_M = 70;
+    let pool_gesamt_F = 70;
+    
+    let freie_plaetze_M = 14;
+    let freie_plaetze_F = 14;
 
-    // Obergrenzen-Prüfung für DEINE alte Klasse
-    let personenAusMeinerAltenKlasse = 1; // Du selbst
-
-    // 1. Auswertung DEINER eigenen Person
-    if (meinGeschlecht === zielGeschlecht) {
-        freiePlaetzeZielgeschlecht -= 1;
-        gesamtPoolZielgeschlecht -= 1;
-        poolAusEigenerKlasseZielgeschlecht -= 1;
+    // 1. DU SELBST belegst fest einen Platz
+    if (meinGeschlecht === 'M') {
+        freie_plaetze_M--; pool_gesamt_M--;
+    } else {
+        freie_plaetze_F--; pool_gesamt_F--;
     }
 
-    // 2. Auswertung DEINER Wünsche
-    meineWuensche.forEach(wunsch => {
-        if (wunsch.ausAlterKlasse) {
-            personenAusMeinerAltenKlasse += 1;
-        }
-        if (wunsch.G === zielGeschlecht) {
-            freiePlaetzeZielgeschlecht -= 1;
-            gesamtPoolZielgeschlecht -= 1;
-            if (wunsch.ausAlterKlasse) {
-                poolAusEigenerKlasseZielgeschlecht -= 1;
-            }
+    // Tracker für die Obergrenze aus deiner alten Klasse (Maximal 10)
+    let personenAusMeinerAltenKlasse = 1; 
+
+    // 2. Deine eigenen Cliquenwünsche abziehen (ziehen feste Plätze ab)
+    meineWuensche.forEach(w => {
+        if (w.ausAlterKlasse) personenAusMeinerAltenKlasse++;
+        if (w.G === 'M') {
+            freie_plaetze_M--; pool_gesamt_M--;
+        } else {
+            freie_plaetze_F--; pool_gesamt_F--;
         }
     });
 
-    // 3. Wie viele Personen bringt der "Block" der Zielperson mit?
-    let blockGroesseGleich = 0; 
-    let blockAusMeinerAltenKlasse = 0; 
+    // 3. Den zu ziehenden Block der Zielperson bestimmen
+    let block_M = 0;
+    let block_F = 0;
 
-    // Die Zielperson selbst auswerten
-    if (zielGeschlecht === zielGeschlecht) {
-        blockGroesseGleich += 1; 
-        if (zielAusMeinerKlasse) {
-            blockAusMeinerAltenKlasse += 1;
-            personenAusMeinerAltenKlasse += 1;
+    if (zielGeschlecht === 'M') {
+        block_M++;
+        if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
+    } else {
+        block_F++;
+        if (zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
+    }
+
+    zielClique.forEach(c => {
+        if (c.ausAlterKlasse && zielAusMeinerKlasse) personenAusMeinerAltenKlasse++;
+        if (c.G === 'M') {
+            block_M++;
+        } else {
+            block_F++;
         }
-    }
+    });
 
-    // Die Cliquenwünsche der Zielperson auswerten
-    if (zielClique && zielClique.length > 0) {
-        zielClique.forEach(wunsch => {
-            if (wunsch.ausAlterKlasse && zielAusMeinerKlasse) {
-                blockAusMeinerAltenKlasse += 1;
-                personenAusMeinerAltenKlasse += 1;
-            }
-            if (wunsch.G === zielGeschlecht) {
-                blockGroesseGleich += 1;
-            }
-        });
-    }
-
-    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse erlaubt
+    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse pro neuer Klasse erlaubt
     if (personenAusMeinerAltenKlasse > 10) {
         return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
     }
 
-    // HARTE SCHRANKE 2: Gibt es überhaupt genug freie Plätze?
-    if (freiePlaetzeZielgeschlecht < blockGroesseGleich || freiePlaetzeZielgeschlecht < 0) {
-        return "0.00% (Unmöglich: Nicht genug freie Plätze vorhanden)";
+    // HARTE SCHRANKE 2: Gibt es überhaupt noch genug freie Plätze für diesen Block?
+    if (freie_plaetze_M < block_M || freie_plaetze_F < block_F || freie_plaetze_M < 0 || freie_plaetze_F < 0) {
+        return "0.00% (Unmöglich: Nicht genug freie Plätze in der Klasse)";
     }
 
-    // 4. Wahrscheinlichkeits-Kette berechnen (Ziehen ohne Zurücklegen)
-    let wahrscheinlichkeit = 1.0;
-    let verbleibenderGesamtPool = gesamtPoolZielgeschlecht;
-    let verbleibenderEigeneKlassePool = poolAusEigenerKlasseZielgeschlecht;
-
-    for (let i = 0; i < blockGroesseGleich; i++) {
-        if (i < blockAusMeinerAltenKlasse) {
-            wahrscheinlichkeit *= (verbleibenderEigeneKlassePool / verbleibenderGesamtPool);
-            verbleibenderEigeneKlassePool -= 1;
-        } else {
-            let fremdKlassenPool = verbleibenderGesamtPool - verbleibenderEigeneKlassePool;
-            wahrscheinlichkeit *= (fremdKlassenPool / verbleibenderGesamtPool);
-        }
-        verbleibenderGesamtPool -= 1;
+    // 4. Hypergeometrische Verteilung: Wie wahrscheinlich ist es, dass genau dieser Block in die verbleibenden freien Plätze fällt?
+    // Formel: (Kombinationen des Blocks in den freien Plätzen) / (Gesamte Kombinationen, die Plätze zu füllen)
+    
+    // Wahrscheinlichkeit für den Männer-Block
+    let chance_M = 1.0;
+    if (block_M > 0) {
+        let günstige_wege_M = binomialKoeffizient(pool_gesamt_M - block_M, freie_plaetze_M - block_M);
+        let alle_wege_M = binomialKoeffizient(pool_gesamt_M, freie_plaetze_M);
+        chance_M = günstige_wege_M / alle_wege_M;
     }
 
-    // Kombinations-Korrekturfaktor
-    let kombinationen = 1;
-    for(let i = 0; i < blockGroesseGleich; i++) {
-        kombinationen *= (freiePlaetzeZielgeschlecht - i) / (i + 1);
+    // Wahrscheinlichkeit für den Frauen-Block
+    let chance_F = 1.0;
+    if (block_F > 0) {
+        let günstige_wege_F = binomialKoeffizient(pool_gesamt_F - block_F, freie_plaetze_F - block_F);
+        let alle_wege_F = binomialKoeffizient(pool_gesamt_F, freie_plaetze_F);
+        chance_F = günstige_wege_F / alle_wege_F;
     }
-    wahrscheinlichkeit *= kombinationen;
 
-    // Multiplikation mit der 98% Umsetzungswahrscheinlichkeit
-    wahrscheinlichkeit *= 0.98;
+    // Zusammenführung der Wahrscheinlichkeiten
+    let endWahrscheinlichkeit = chance_M * chance_F;
 
-    if(wahrscheinlichkeit > 0.98) wahrscheinlichkeit = 0.98;
-    if(wahrscheinlichkeit < 0) wahrscheinlichkeit = 0;
+    // Multiplikation mit der 98% Umsetzungswahrscheinlichkeit der Schulleitung
+    endWahrscheinlichkeit *= 0.98;
 
-    return (wahrscheinlichkeit * 100).toFixed(2) + "%";
+    // Absicherung der Grenzwerte
+    if (endWahrscheinlichkeit > 0.98) endWahrscheinlichkeit = 0.98;
+    if (endWahrscheinlichkeit < 0) endWahrscheinlichkeit = 0;
+
+    return (endWahrscheinlichkeit * 100).toFixed(2) + "%";
 }
 
 function berechneUndZeigeAn() {
