@@ -332,142 +332,96 @@
     </div>
 
 <script>
-// Hilfsfunktion zur exakten Berechnung von Kombinationen (n über k)
-function binomialKoeffizient(n, k) {
-    if (k < 0 || k > n) return 0;
-    if (k === 0 || k === n) return 1;
-    if (k > n / 2) k = n - k;
-    let ergebnis = 1;
-    for (let i = 1; i <= k; i++) {
-        ergebnis = ergebnis * (n - k + i) / i;
-    }
-    return ergebnis;
-}
-
 function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
-    // Stufen-Pools (5 Klassen * 14 Personen pro Geschlecht = 70 M und 70 F)
-    let pool_gesamt_M = 70;
-    let pool_gesamt_F = 70;
-    
-    // Davon stammen exakt 14 aus DEINER alten Klasse
-    let pool_alt_M = 14;
-    let pool_alt_F = 14;
-    
-    // Freie Restplätze in der neuen Zielklasse
-    let freie_M = 14;
-    let freie_F = 14;
+    // Grund-Basiswahrscheinlichkeit (Ein Schüler landet rein zufällig zu 20% in einer von 5 Klassen)
+    let chance = 0.20;
 
-    // 1. DU SELBST belegst fest einen Platz
-    if (meinGeschlecht === 'M') {
-        freie_M--; pool_gesamt_M--; pool_alt_M--;
-    } else {
-        freie_F--; pool_gesamt_F--; pool_alt_F--;
-    }
+    // Variablen zur Analyse der Struktur sammeln
+    let anzahlAlteKlasse = 0;
+    let anzahlMaenner = 0;
+    let anzahlFrauen = 0;
 
-    // Zähler für die maximale Obergrenze (Maximal 10 aus deiner alten Klasse erlaubt)
-    let personenAusMeinerAltenKlasse = 1; 
+    let meineGruppeNurMaenner = (meinGeschlecht === 'M');
+    let meineGruppeNurFrauen = (meinGeschlecht === 'F');
+    let zielGruppeNurMaenner = (zielGeschlecht === 'M');
+    let zielGruppeNurFrauen = (zielGeschlecht === 'F');
 
-    // 2. Deine eigenen Cliquenwünsche abziehen
+    // 1. Eigene Person zählen
+    if (meinGeschlecht === 'M') anzahlMaenner++; else anzahlFrauen++;
+    anzahlAlteKlasse++; // Du selbst zählst für deine alte Klasse
+
+    // 2. Deine Cliquenwünsche auswerten
     meineWuensche.forEach(w => {
-        if (w.ausAlterKlasse) {
-            personenAusMeinerAltenKlasse++;
-        }
         if (w.G === 'M') {
-            freie_M--; pool_gesamt_M--;
-            if (w.ausAlterKlasse) pool_alt_M--;
-        } else {
-            freie_F--; pool_gesamt_F--;
-            if (w.ausAlterKlasse) pool_alt_F--;
+            anzahlMaenner++;
+            meineGruppeNurFrauen = false;
+        } else if (w.G === 'F') {
+            anzahlFrauen++;
+            meineGruppeNurMaenner = false;
+        }
+        if (w.ausAlterKlasse) {
+            anzahlAlteKlasse++;
         }
     });
 
-    // 3. Den Ziel-Block analysieren und die Wahrscheinlichkeits-Kette aufbauen
-    let block_M = 0;
-    let block_F = 0;
-    
-    let block_alt_M = 0;
-    let block_alt_F = 0;
-
-    // Zielperson selbst einrechnen
+    // 3. Zielperson auswerten
     if (zielGeschlecht === 'M') {
-        block_M++;
-        if (zielAusMeinerKlasse) {
-            block_alt_M++;
-            personenAusMeinerAltenKlasse++;
-        }
+        anzahlMaenner++;
     } else {
-        block_F++;
-        if (zielAusMeinerKlasse) {
-            block_alt_F++;
-            personenAusMeinerAltenKlasse++;
-        }
+        anzahlFrauen++;
+    }
+    if (zielAusMeinerKlasse) {
+        anzahlAlteKlasse++;
     }
 
-    // Cliquen-Partner der Zielperson einrechnen
+    // 4. Cliquenwünsche der Zielperson auswerten
     zielClique.forEach(c => {
         if (c.G === 'M') {
-            block_M++;
-            if (c.ausAlterKlasse && zielAusMeinerKlasse) {
-                block_alt_M++;
-                personenAusMeinerAltenKlasse++;
-            }
-        } else {
-            block_F++;
-            if (c.ausAlterKlasse && zielAusMeinerKlasse) {
-                block_alt_F++;
-                personenAusMeinerAltenKlasse++;
-            }
+            anzahlMaenner++;
+            zielGruppeNurFrauen = false;
+        } else if (c.G === 'F') {
+            anzahlFrauen++;
+            zielGruppeNurMaenner = false;
+        }
+        if (c.ausAlterKlasse && zielAusMeinerKlasse) {
+            anzahlAlteKlasse++;
         }
     });
 
-    // HARTE SCHRANKE 1: Maximal 10 Personen aus deiner alten Klasse pro neuer Klasse erlaubt
-    if (personenAusMeinerAltenKlasse > 10) {
+    // --- LOGISCHE REGELN ANWENDEN ---
+
+    // REGEL 1: Unterschiedliche Geschlechter erhöhen die Chance (Mischungskonzept)
+    if (meinGeschlecht !== zielGeschlecht) {
+        chance *= 1.35; // 35% Bonus
+    } else {
+        chance *= 0.85; // Malus bei gleichem Geschlecht
+    }
+
+    // REGEL 2: Je mehr Personen aus der alten Klasse stammen, desto unwahrscheinlicher wird es (Klassentrennung)
+    // Jede weitere Person aus der alten Klasse senkt die Chance um 15%
+    if (anzahlAlteKlasse > 1) {
+        let malusFaktor = Math.pow(0.85, anzahlAlteKlasse - 1);
+        chance *= malusFaktor;
+    }
+
+    // REGEL 3: Reine Männer-Überschüsse oder reine Männer-Gruppen machen es unwahrscheinlicher
+    let gesamtPersonen = anzahlMaenner + anzahlFrauen;
+    if (anzahlMaenner / gesamtPersonen > 0.7) {
+        chance *= 0.65; // 35% Abzug bei massivem Jungs-Überschuss
+    }
+
+    // REGEL 4: Perfektes Match (User-Gruppe rein männlich, Ziel-Gruppe rein weiblich ODER umgekehrt)
+    if ((meineGruppeNurMaenner && zielGruppeNurFrauen) || (meineGruppeNurFrauen && zielGruppeNurMaenner)) {
+        chance *= 1.60; // 60% massiver Match-Bonus!
+    }
+
+    // HARTE ABSOLUTE SPERRE DER SCHULE
+    if (anzahlAlteKlasse > 10) {
         return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
     }
 
-    // HARTE SCHRANKE 2: Reichen die freien Plätze für den Ziel-Block überhaupt noch aus?
-    if (freie_M < block_M || freie_F < block_F || freie_M < 0 || freie_F < 0) {
-        return "0.00% (Unmöglich: Nicht genug freie Plätze in der Klasse)";
-    }
-
-    // 4. Kombinatorische Wahrscheinlichkeitsberechnung über die hypergeometrische Verteilung
-    // Wie hoch ist die Chance, genau die gewünschte Verteilung aus den jeweiligen Pools zu ziehen?
-    
-    // Berechnung für Männer
-    let p_M = 1.0;
-    if (block_M > 0) {
-        // Günstige Kombinationen: (Wege die 'alten' Männer zu wählen) * (Wege die 'fremden' Männer zu wählen)
-        let guenstig_M = binomialKoeffizient(pool_alt_M, block_alt_M) * binomialKoeffizient(pool_gesamt_M - pool_alt_M, block_M - block_alt_M);
-        let alle_M = binomialKoeffizient(pool_gesamt_M, block_M);
-        
-        // Wahrscheinlichkeit für die Zusammensetzung des Blocks
-        let block_chance_M = guenstig_M / alle_M;
-        
-        // Multipliziert mit der Platzierungs-Chance im verbleibenden Klassengitter
-        let platz_komb_M = binomialKoeffizient(freie_M, block_M) / binomialKoeffizient(pool_gesamt_M, block_M);
-        
-        // Wenn der Block komplett aus deiner alten Klasse kommt, korrigiert sich die Chance automatisch nach unten
-        p_M = block_chance_M * (binomialKoeffizient(freie_M, block_M) * 1.5 / binomialKoeffizient(pool_gesamt_M, block_M));
-    }
-
-    // Berechnung für Frauen
-    let p_F = 1.0;
-    if (block_F > 0) {
-        let guenstig_F = binomialKoeffizient(pool_alt_F, block_alt_F) * binomialKoeffizient(pool_gesamt_F - pool_alt_F, block_F - block_alt_F);
-        let alle_F = binomialKoeffizient(pool_gesamt_F, block_F);
-        
-        let block_chance_F = guenstig_F / alle_F;
-        
-        p_F = block_chance_F * (binomialKoeffizient(freie_F, block_F) * 1.5 / binomialKoeffizient(pool_gesamt_F, block_F));
-    }
-
-    // Zusammenführen und mit der Umsetzungswahrscheinlichkeit der Schulleitung (98%) verrechnen
-    let endChance = p_M * p_F * 0.98;
-
-    // Skalierung auf realistische Verteilungswerte zwischen 3% und 35% für funktionierende Cliquen
-    if (endChance > 0.35) endChance = 0.30 + (endChance * 0.05); 
-    
-    // Grenzen absichern
+    // Endergebnis mit Schulleitungs-Faktor (98%) verrechnen und Grenzen deckeln
+    let endChance = chance * 0.98;
     if (endChance > 0.98) endChance = 0.98;
     if (endChance < 0.01) endChance = 0.01;
 
@@ -524,3 +478,4 @@ function berechneUndZeigeAn() {
 
 </body>
 </html>
+
