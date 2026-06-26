@@ -1,3 +1,7 @@
+
+
+
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -25,6 +29,9 @@
             --text: #0f172a;
             --text-secondary: #475569;
             --border: #cbd5e1;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #16a34a;
         }
 
         body {
@@ -126,22 +133,6 @@
             outline: none;
         }
 
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            font-size: 13px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .checkbox-group input {
-            margin-right: 8px;
-            width: 16px;
-            height: 16px;
-            accent-color: var(--primary);
-        }
-
         .btn {
             width: 100%;
             background-color: var(--primary);
@@ -175,6 +166,37 @@
             font-weight: 800;
             color: var(--primary);
             margin-top: 5px;
+        }
+
+        #simulator-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--success-bg);
+            border: 1px solid var(--success-border);
+            text-align: left;
+            display: none;
+        }
+
+        .sim-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--success-text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sim-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .sim-highlight {
+            font-weight: 700;
+            color: var(--text);
         }
 
         .math-section {
@@ -215,11 +237,25 @@
                 <div class="section-title">1. Deine Daten</div>
             </div>
             <div class="form-group">
-                <label for="meinGeschlecht">Dein Geschlecht:</label>
-                <select id="meinGeschlecht">
-                    <option value="M">Mann</option>
-                    <option value="F">Frau</option>
-                </select>
+                <div class="input-row">
+                    <div style="flex: 1;">
+                        <label for="meinGeschlecht">Dein Geschlecht:</label>
+                        <select id="meinGeschlecht">
+                            <option value="M">Mann</option>
+                            <option value="F">Frau</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="meineKlasse">Deine aktuelle Klasse:</label>
+                        <select id="meineKlasse">
+                            <option value="10a">10a</option>
+                            <option value="10b">10b</option>
+                            <option value="10c">10c</option>
+                            <option value="10d">10d</option>
+                            <option value="10e">10e</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -237,10 +273,14 @@
                         <option value="M">Mann</option>
                         <option value="F">Frau</option>
                     </select>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="wunsch1_alt">
-                        Aus meiner alten Klasse
-                    </label>
+                    <select id="wunsch1_klasse">
+                        <option value="unbekannt">Klasse wählen</option>
+                        <option value="10a">10a</option>
+                        <option value="10b">10b</option>
+                        <option value="10c">10c</option>
+                        <option value="10d">10d</option>
+                        <option value="10e">10e</option>
+                    </select>
                 </div>
             </div>
 
@@ -252,10 +292,14 @@
                         <option value="M">Mann</option>
                         <option value="F">Frau</option>
                     </select>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="wunsch2_alt">
-                        Aus meiner alten Klasse
-                    </label>
+                    <select id="wunsch2_klasse">
+                        <option value="unbekannt">Klasse wählen</option>
+                        <option value="10a">10a</option>
+                        <option value="10b">10b</option>
+                        <option value="10c">10c</option>
+                        <option value="10d">10d</option>
+                        <option value="10e">10e</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -265,16 +309,24 @@
                 <div class="section-title">3. Gesuchte Person</div>
             </div>
             <div class="form-group">
-                <label for="zielGeschlecht">Geschlecht der gesuchten Person:</label>
                 <div class="input-row">
-                    <select id="zielGeschlecht">
-                        <option value="M">Mann</option>
-                        <option value="F">Frau</option>
-                    </select>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="ziel_alt" checked>
-                        Aus meiner alten Klasse
-                    </label>
+                    <div style="flex: 1;">
+                        <label for="zielGeschlecht">Geschlecht:</label>
+                        <select id="zielGeschlecht">
+                            <option value="M">Mann</option>
+                            <option value="F">Frau</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="zielKlasse">Aktuelle Klasse:</label>
+                        <select id="zielKlasse">
+                            <option value="10a">10a</option>
+                            <option value="10b">10b</option>
+                            <option value="10c">10c</option>
+                            <option value="10d">10d</option>
+                            <option value="10e">10e</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -293,10 +345,14 @@
                         <option value="M">Mann</option>
                         <option value="F">Frau</option>
                     </select>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="clique1_alt">
-                        Aus ihrer alten Klasse
-                    </label>
+                    <select id="clique1_klasse">
+                        <option value="unbekannt">Klasse wählen</option>
+                        <option value="10a">10a</option>
+                        <option value="10b">10b</option>
+                        <option value="10c">10c</option>
+                        <option value="10d">10d</option>
+                        <option value="10e">10e</option>
+                    </select>
                 </div>
             </div>
 
@@ -308,10 +364,14 @@
                         <option value="M">Mann</option>
                         <option value="F">Frau</option>
                     </select>
-                    <label class="checkbox-group">
-                        <input type="checkbox" id="clique2_alt">
-                        Aus ihrer alten Klasse
-                    </label>
+                    <select id="clique2_klasse">
+                        <option value="unbekannt">Klasse wählen</option>
+                        <option value="10a">10a</option>
+                        <option value="10b">10b</option>
+                        <option value="10c">10c</option>
+                        <option value="10d">10d</option>
+                        <option value="10e">10e</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -321,6 +381,11 @@
         <div id="result-box">
             <div id="result-text" style="font-weight: 600; color: var(--text-secondary);">Die Wahrscheinlichkeit beträgt:</div>
             <div id="result-value">0.00%</div>
+        </div>
+
+        <div id="simulator-box">
+            <div class="sim-title">🔮 Deine simulierte Zukunftsklasse:</div>
+            <div id="simulator-content" class="sim-text"></div>
         </div>
     </div>
 
@@ -332,11 +397,9 @@
     </div>
 
 <script>
-function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique) {
-    // Grund-Basiswahrscheinlichkeit (Ein Schüler landet rein zufällig zu 20% in einer von 5 Klassen)
+function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique) {
     let chance = 0.20;
 
-    // Variablen zur Analyse der Struktur sammeln
     let anzahlAlteKlasse = 0;
     let anzahlMaenner = 0;
     let anzahlFrauen = 0;
@@ -346,136 +409,135 @@ function berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGe
     let zielGruppeNurMaenner = (zielGeschlecht === 'M');
     let zielGruppeNurFrauen = (zielGeschlecht === 'F');
 
-    // 1. Eigene Person zählen
+    // Set zur Speicherung ALLER einzigartigen Klassen, die im Formular ausgewählt wurden
+    let klassenSet = new Set();
+    klassenSet.add(meineKlasse);
+
+    // 1. Eigene Person auswerten
     if (meinGeschlecht === 'M') anzahlMaenner++; else anzahlFrauen++;
-    anzahlAlteKlasse++; // Du selbst zählst für deine alte Klasse
+    anzahlAlteKlasse++; 
 
     // 2. Deine Cliquenwünsche auswerten
     meineWuensche.forEach(w => {
-        if (w.G === 'M') {
-            anzahlMaenner++;
-            meineGruppeNurFrauen = false;
-        } else if (w.G === 'F') {
-            anzahlFrauen++;
-            meineGruppeNurMaenner = false;
-        }
-        if (w.ausAlterKlasse) {
+        if (w.G === 'M') { anzahlMaenner++; meineGruppeNurFrauen = false; }
+        else if (w.G === 'F') { anzahlFrauen++; meineGruppeNurMaenner = false; }
+        
+        if (w.klasse !== "unbekannt") klassenSet.add(w.klasse);
+        if (w.klasse === meineKlasse) {
             anzahlAlteKlasse++;
         }
     });
 
     // 3. Zielperson auswerten
-    if (zielGeschlecht === 'M') {
-        anzahlMaenner++;
-    } else {
-        anzahlFrauen++;
-    }
-    if (zielAusMeinerKlasse) {
-        anzahlAlteKlasse++;
-    }
+    if (zielGeschlecht === 'M') anzahlMaenner++; else anzahlFrauen++;
+    klassenSet.add(zielKlasse);
+    if (zielKlasse === meineKlasse) anzahlAlteKlasse++;
 
     // 4. Cliquenwünsche der Zielperson auswerten
     zielClique.forEach(c => {
-        if (c.G === 'M') {
-            anzahlMaenner++;
-            zielGruppeNurFrauen = false;
-        } else if (c.G === 'F') {
-            anzahlFrauen++;
-            zielGruppeNurMaenner = false;
-        }
-        if (c.ausAlterKlasse && zielAusMeinerKlasse) {
+        if (c.G === 'M') { anzahlMaenner++; zielGruppeNurFrauen = false; }
+        else if (c.G === 'F') { anzahlFrauen++; zielGruppeNurMaenner = false; }
+        
+        if (c.klasse !== "unbekannt") klassenSet.add(c.klasse);
+        if (zielKlasse === meineKlasse && c.klasse === meineKlasse) {
             anzahlAlteKlasse++;
         }
     });
 
-    // --- LOGISCHE REGELN ANWENDEN ---
+    // --- NEU: DIVERSITÄTS-CHECK DER URSPRUNGSKLASSEN ---
+    let anzahlBeteiligtePersonen = 1 + meineWuensche.length + 1 + zielClique.length;
+    let einzigartigeKlassenZahl = klassenSet.size;
 
-    // REGEL 1: Unterschiedliche Geschlechter erhöhen die Chance (Mischungskonzept)
-    if (meinGeschlecht !== zielGeschlecht) {
-        chance *= 1.35; // 35% Bonus
-    } else {
-        chance *= 0.85; // Malus bei gleichem Geschlecht
+    if (einzigartigeKlassenZahl >= 3) {
+        // Extrem hoher Bonus, wenn die Leute bunt aus verschiedenen Klassen gewürfelt sind
+        chance *= 1.55; 
+    } else if (einzigartigeKlassenZahl === 1 && anzahlBeteiligtePersonen > 1) {
+        // Malus, wenn absolut ALLE Personen aus exakt derselben alten Klasse stammen
+        chance *= 0.70; 
     }
 
-    // REGEL 2: Je mehr Personen aus der alten Klasse stammen, desto unwahrscheinlicher wird es (Klassentrennung)
-    // Jede weitere Person aus der alten Klasse senkt die Chance um 15%
+    // --- ALTE LOGISCHE REGELN (UNBERÜHRT) ---
+    if (meinGeschlecht !== zielGeschlecht) chance *= 1.35; else chance *= 0.85;
+
     if (anzahlAlteKlasse > 1) {
-        let malusFaktor = Math.pow(0.85, anzahlAlteKlasse - 1);
-        chance *= malusFaktor;
+        chance *= Math.pow(0.85, anzahlAlteKlasse - 1);
     }
 
-    // REGEL 3: Reine Männer-Überschüsse oder reine Männer-Gruppen machen es unwahrscheinlicher
     let gesamtPersonen = anzahlMaenner + anzahlFrauen;
-    if (anzahlMaenner / gesamtPersonen > 0.7) {
-        chance *= 0.65; // 35% Abzug bei massivem Jungs-Überschuss
-    }
+    if (anzahlMaenner / gesamtPersonen > 0.7) chance *= 0.65;
 
-    // REGEL 4: Perfektes Match (User-Gruppe rein männlich, Ziel-Gruppe rein weiblich ODER umgekehrt)
     if ((meineGruppeNurMaenner && zielGruppeNurFrauen) || (meineGruppeNurFrauen && zielGruppeNurMaenner)) {
-        chance *= 1.60; // 60% massiver Match-Bonus!
+        chance *= 1.60;
     }
 
-    // HARTE ABSOLUTE SPERRE DER SCHULE
+    // Harte Obergrenze
     if (anzahlAlteKlasse > 10) {
-        return "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)";
+        return { prozent: "0.00% (Verboten: Maximal 10 Personen aus derselben alten Klasse!)", fehler: true, alteKlasseZahl: anzahlAlteKlasse };
     }
 
-    // Endergebnis mit Schulleitungs-Faktor (98%) verrechnen und Grenzen deckeln
     let endChance = chance * 0.98;
     if (endChance > 0.98) endChance = 0.98;
     if (endChance < 0.01) endChance = 0.01;
 
-    return (endChance * 100).toFixed(2) + "%";
+    return { prozent: (endChance * 100).toFixed(2) + "%", fehler: false, alteKlasseZahl: anzahlAlteKlasse };
 }
 
 function berechneUndZeigeAn() {
     const meinGeschlecht = document.getElementById("meinGeschlecht").value;
+    const meineKlasse = document.getElementById("meineKlasse").value;
     const zielGeschlecht = document.getElementById("zielGeschlecht").value;
-    const zielAusMeinerKlasse = document.getElementById("ziel_alt").checked;
+    const zielKlasse = document.getElementById("zielKlasse").value;
 
-    // Eigene Wünsche auslesen
     const meineWuensche = [];
     const w1_G = document.getElementById("wunsch1_G").value;
-    if (w1_G) {
-        meineWuensche.push({ G: w1_G, ausAlterKlasse: document.getElementById("wunsch1_alt").checked });
-    }
+    if (w1_G) meineWuensche.push({ G: w1_G, klasse: document.getElementById("wunsch1_klasse").value });
     const w2_G = document.getElementById("wunsch2_G").value;
-    if (w2_G) {
-        meineWuensche.push({ G: w2_G, ausAlterKlasse: document.getElementById("wunsch2_alt").checked });
-    }
+    if (w2_G) meineWuensche.push({ G: w2_G, klasse: document.getElementById("wunsch2_klasse").value });
 
-    // Cliquen-Wünsche der Zielperson auslesen
     const zielClique = [];
     const c1_G = document.getElementById("clique1_G").value;
-    if (c1_G) {
-        zielClique.push({ G: c1_G, ausAlterKlasse: document.getElementById("clique1_alt").checked });
-    }
+    if (c1_G) zielClique.push({ G: c1_G, klasse: document.getElementById("clique1_klasse").value });
     const c2_G = document.getElementById("clique2_G").value;
-    if (c2_G) {
-        zielClique.push({ G: c2_G, ausAlterKlasse: document.getElementById("clique2_alt").checked });
-    }
+    if (c2_G) zielClique.push({ G: c2_G, klasse: document.getElementById("clique2_klasse").value });
 
     // Berechnen
-    const ergebnis = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineWuensche, zielGeschlecht, zielAusMeinerKlasse, zielClique);
+    const ergebnisObjekt = berechneWebsiteWahrscheinlichkeit(meinGeschlecht, meineKlasse, meineWuensche, zielGeschlecht, zielKlasse, zielClique);
 
-    // Anzeigen
+    // Wahrscheinlichkeitsbox anzeigen
     const resultBox = document.getElementById("result-box");
     const resultValue = document.getElementById("result-value");
     const resultText = document.getElementById("result-text");
     
-    if (ergebnis.includes("Verboten") || ergebnis.includes("Unmöglich")) {
+    if (ergebnisObjekt.fehler) {
         resultText.innerText = "Hinweis:";
         resultValue.style.color = "#dc2626"; 
+        document.getElementById("simulator-box").style.display = "none";
     } else {
         resultText.innerText = "Die Wahrscheinlichkeit beträgt:";
         resultValue.style.color = "#4f46e5"; 
+        
+        // SIMULATOR TEXT GENERIEREN
+        const neueKlassenNamen = ["11A", "11B", "11C", "11D", "11E"];
+        const zufallsKlasse = neueKlassenNamen[Math.floor(Math.random() * neueKlassenNamen.length)];
+        
+        let simJungs = 14;
+        let simMaedchen = 14;
+        let simAlteKlasse = ergebnisObjekt.alteKlasseZahl;
+
+        const simBox = document.getElementById("simulator-box");
+        const simContent = document.getElementById("simulator-content");
+        
+        simContent.innerHTML = `Du wirst voraussichtlich in die neue Klasse <span class="sim-highlight">${zufallsKlasse}</span> kommen.<br>` +
+                               `Dort werden exakt <span class="sim-highlight">${simJungs} Jungs</span> und <span class="sim-highlight">${simMaedchen} Mädchen</span> mit dir lernen.<br>` +
+                               `Von deiner alten Klasse (<span class="sim-highlight">${meineKlasse}</span>) kommen genau <span class="sim-highlight">${simAlteKlasse} Personen</span> mit dir in diese neue Gruppe.`;
+        
+        simBox.style.display = "block";
     }
     
-    resultValue.innerText = ergebnis;
+    resultValue.innerText = ergebnisObjekt.prozent;
     resultBox.style.display = "block";
 }
 </script>
 
 </body>
 </html>
-
